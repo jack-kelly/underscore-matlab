@@ -1,13 +1,15 @@
-function out = flatten(collection, shallow, split_strings)
+function out = flatten(collection, split_strings)
+	import java.util.LinkedList
 	if nargin < 2
-		shallow = false;
-		split_strings = false;
-	elseif nargin < 3
 		split_strings = false;
 	end
-	if shallow
-		
-	else
 
-	end		
+	Q = LinkedList();
+	each_deep(@(x)add(Q,x),collection,split_strings);
+	
+	n = Q.size;
+	out = cell(n, 1);
+	for kk = 1:n
+		out{kk} = Q.remove();
+	end
 end

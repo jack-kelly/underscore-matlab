@@ -4,7 +4,7 @@ function each_deep(fun, collection, split_strings)
 	end
 	if iscell(collection)
 		for k = 1:numel(collection)
-			each_deep(fun, collection{k});
+			each_deep(fun, collection{k},split_strings);
 		end
 	elseif isscalar(collection)
 		fun(collection);
