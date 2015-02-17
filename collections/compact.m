@@ -1,3 +1,5 @@
+% Removes values that are not true-ish.
+% This includes false, empty arrays, empty cell arrays, etc.
 function out = compact(collection)
 	if isnumeric(collection)
 		out = collection(find(collection));
