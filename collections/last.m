@@ -1,3 +1,4 @@
+% Returns the last object in a collection.
 function out = last(collection)
 	if isempty(collection)
 		out = []
