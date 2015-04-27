@@ -5,6 +5,6 @@
 %
 % SEE ALSO: curry_end, curry, curry_n
 function curried = curry_n(f,varargin)
-	arg = varargin;
+	arg = varargin; clear varargin;
 	curried = @(varargin) f(varargin{:},arg{:});
 end

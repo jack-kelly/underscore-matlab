@@ -14,6 +14,6 @@
 % ans =
 % 		10
 function curried = curry_n(f,varargin)
-	arg = varargin;
+	arg = varargin; clear varargin;
 	curried = @(varargin) f(arg{:},varargin{:});
 end
