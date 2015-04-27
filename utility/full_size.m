@@ -1,9 +1,9 @@
-% fullSize - Like size but better
+% full_size - Like size but better
 %{ 
 %-------------------------------------------------------------------------------
 % SYNTAX:
-%   result = fullSize(x,<dim>)
-%   [r1,r2,...] = fullSize(x,<dim>);
+%   result = full_size(x,<dim>)
+%   [r1,r2,...] = full_size(x,<dim>);
 %
 % PURPOSE:
 %   This function determines the size of x.  If dim is passed, the size of x
@@ -36,9 +36,9 @@
 % 
 %-------------------------------------------------------------------------------
 %}
-function varargout = fullSize(x,dim)
+function varargout = full_size(x,dim)
 
-	% Compute the fullSize as a vector
+	% Compute the full_size as a vector
 	xEmpty = isempty(x);
 	if(xEmpty || isscalar(x))
 	    result = numel(x);
