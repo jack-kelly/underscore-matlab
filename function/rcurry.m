@@ -1,6 +1,6 @@
 % Curry an argument from a function (off the end)
 %
-%	curried = curry(f,arg)
+%	curried = rcurry(f,arg)
 %
 % Note: curries from the back. 
 %
@@ -13,6 +13,6 @@
 % >> g(3)
 % ans =
 % 		7
-function curried = curry_end(f,arg)
+function curried = rcurry(f,arg)
 	curried = @(varargin) f(varargin{:},arg);
 end
