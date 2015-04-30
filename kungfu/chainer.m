@@ -34,6 +34,9 @@ classdef chainer
 		function obj = flatten(obj, varargin)
 			obj = chainer(flatten(obj.value, varargin{:}));
 		end
+		function obj = reduce(obj, varargin)
+			obj = chainer(foldr(varargin{:}, obj.value));
+		end
 		function obj = foldr(obj, varargin)
 			obj = chainer(foldr(varargin{:}, obj.value));
 		end
