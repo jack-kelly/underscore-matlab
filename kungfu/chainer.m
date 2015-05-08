@@ -1,3 +1,20 @@
+%{
+	A simple object to chain together many functional
+	operations. Can often help readability of complex operations.
+
+	Examples:
+
+	>> chainer(1:10000).map(@(x)1/x).map(@(x)x^2).sum.value
+	ans =
+	    1.6448
+
+	>> chainer(magic(3)).col.foldl(@plus).value
+	ans =
+	    45
+
+	NOTE: Some functions, such as sum, prod, etc. will error
+	if you try to use them on non-numeric types.
+%}
 classdef chainer
 	properties(SetAccess = private, GetAccess = public)
 		value
@@ -21,12 +38,24 @@ classdef chainer
 		end
 		function each_deep(obj, varargin)
 			each_deep(varargin{:}, obj.value);
-		end		
+		end
+		function obj = cell2mat(obj, varargin)
+			obj = chainer(cell2mat(obj.value, varargin{:}));
+		end
+		function obj = mat2cell(obj, varargin)
+			obj = chainer(mat2cell(obj.value, varargin{:}));
+		end	
 		function obj = curly(obj, varargin)
 			obj = chainer(curly(obj.value, varargin{:}));
 		end
+		function obj = dot_(obj, varargin)
+			obj = chainer(dot_(obj.value, varargin{:}));
+		end
 		function obj = drop(obj, varargin)
 			obj = chainer(drop(varargin{:},obj.value));
+		end
+		function obj = diff(obj, varargin)
+			obj = chainer(diff(obj.value,varargin{:}));
 		end
 		function obj = fetch(obj, varargin)
 			obj = chainer(fetch(obj.value, varargin{:}));
@@ -61,8 +90,22 @@ classdef chainer
 		function obj = paren(obj, varargin)
 			obj = chainer(paren(obj.value, varargin{:}));
 		end
+		function obj = prod(obj, varargin)
+			if isnumeric(obj.value)
+				obj = chainer(prod(obj.value, varargin{:}));
+			else
+				obj = chainer(reduce(@times, obj.value));
+			end
+		end
 		function obj = select(obj, varargin)
 			obj = chainer(select(varargin{:}, obj.value));
+		end
+		function obj = sum(obj, varargin)
+			if isnumeric(obj.value)
+				obj = chainer(sum(obj.value, varargin{:}));
+			else
+				obj = chainer(reduce(@plus, obj.value));
+			end
 		end
 		function obj = reject(obj, varargin)
 			obj = chainer(reject(varargin{:}, obj.value));
@@ -75,6 +118,9 @@ classdef chainer
 		end
 		function obj = zip(obj, varargin)
 			obj = chainer(zip(obj.value, varargin{:}));
+		end
+		function obj = unzip(obj, varargin)
+			obj = chainer(unzip(obj.value, varargin{:}));
 		end
 	end
 end
