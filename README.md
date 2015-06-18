@@ -9,6 +9,6 @@ NOTES:
 
 - This was not designed with speed in mind. Full performance evaluations have not been done.
 
-- `each_deep` relies on some unsupported java hacks. This comes with the standard "This could stop working at any time" disclaimer.
+- `each_deep` and `flatten` rely on some unsupported java hacks. This comes with the standard "This could stop working at any time" disclaimer.
 
 Feel free to submit bug reports or give suggestions.
