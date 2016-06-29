@@ -1,6 +1,7 @@
 % out = drop(n, collection)
 %
 % Drop the first n elements of collection.
+% Note, indexing is linear, so it will always return a vector.
 %
 % USAGE:
 %
@@ -17,7 +18,7 @@
 % pancakes!
 function out = drop(n, collection)
 	if isempty(collection) || n > numel(collection)
-		out = [];
+		out = collection([]); % ensures return collection type is the same
 	else
 		out = collection(n+1:end);
 	end

@@ -11,4 +11,6 @@ NOTES:
 
 - `each_deep` and `flatten` rely on some unsupported java hacks. This comes with the standard "This could stop working at any time" disclaimer.
 
-Feel free to submit bug reports or give suggestions.
+Testing is in progress. Feel free to submit bug reports or give suggestions.
+
+Jack Kelly 2016

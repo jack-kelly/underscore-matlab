@@ -3,6 +3,8 @@
 % Removes values that are not true-ish.
 % This includes 0, false, and objects that return true
 % for isempty()
+% 
+% UNDEFINED FOR STRUCTS
 %
 % USAGE:
 %
@@ -17,6 +19,10 @@
 %      1     2     3     4     5
 %
 function out = compact(collection)
+    if isstruct(collection)
+        error('compact:nostructs','Behavior of compact() undefined on structs.');
+    end
+    
 	if isnumeric(collection)
 		out = collection(find(collection));
 	else

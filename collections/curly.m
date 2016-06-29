@@ -6,5 +6,8 @@
 %
 % Note: pass the string ':' for :
 function varargout = curly(collection, varargin)
+    if ~iscell(collection)
+        error('curly:noncell','Only valid for cell input for collection.')
+    end
 	[varargout{1:numel(paren(collection,varargin{:}))}] = collection{varargin{:}};
 end

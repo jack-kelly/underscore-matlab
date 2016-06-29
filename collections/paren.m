@@ -1,4 +1,4 @@
-% out = paren(cell_array,inds1,inds2,...,indsN)
+% out = paren(thing,inds1,inds2,...,indsN)
 %
 % Functional interface to array slicing / function evaluation
 %

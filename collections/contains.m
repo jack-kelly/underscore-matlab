@@ -1,7 +1,7 @@
 % out = contains(collection, object)
 %
 % Returns true if collection contains object,
-% false otherwise.
+% false otherwise. Undefined for structs.
 %
 % USAGE:
 %
@@ -19,5 +19,9 @@
 % ans =
 %      0
 function out = contains(collection, object)
+    if isstruct(collection)
+        error('contains:nostructs','Behavior of contains() undefined on structs.');
+    end
+
 	out = ~isempty(compact(map(curry(@isequal,object),collection)));
 end

@@ -3,7 +3,7 @@ function [varargout] = slideshow(images, varargin)
 
 	h = figure;
 	ax      = axes('Units', 'normalized', 'Position',[0.05 0.15,0.90,0.80]);
-	imagesc(iter(images,1))
+	im(iter(images,1))
 	update_call(1);
 	
 	control = uicontrol('Style', 'Slider', ...
@@ -35,14 +35,14 @@ function slider_callback(ax, images, iter,update_call, source, data)
 	obj = guihandles(source.Parent);
 	obj.valueEdit.String = num2str(k);
 
-	axes(ax); imagesc(iter(images,k)); update_call(); drawnow;
+	axes(ax); im(iter(images,k)); update_call(); drawnow;
 end
 
 function text_callback(ax, images, iter,update_call, source, data)
 	obj = guihandles(source.Parent);
 	k = clamp(round(real(str2double(source.String))), [obj.valueSlider.Min obj.valueSlider.Max] );
 	obj.valueSlider.Value = k;
-	axes(ax); imagesc(iter(images,k)); update_call(k); drawnow;
+	axes(ax); im(iter(images,k)); update_call(k); drawnow;
 end
 
 function scrollwheel_callback(ax,images,iter,update_call, source, data)
