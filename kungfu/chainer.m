@@ -1,20 +1,23 @@
 %{
-	A simple object to chain together many functional
-	operations. Can often help readability of complex operations.
-
-	Examples:
-
-	>> chainer(1:10000).map(@(x)1/x).map(@(x)x^2).sum.value
-	ans =
-	    1.6448
-
-	>> chainer(magic(3)).col.foldl(@plus).value
-	ans =
-	    45
-
-	NOTE: Some functions, such as sum, prod, etc. will error
-	if you try to use them on non-numeric types.
+%-------------------------------------------------------------------------------
+%	A simple object to chain together many functional
+%	operations. Can often help readability of complex operations.
+%
+%	Examples:
+%
+%	>> chainer(1:10000).map(@(x)1/x).map(@(x)x^2).sum.value
+%	ans =
+%	    1.6448
+%
+%	>> chainer(magic(3)).col.foldl(@plus).value
+%	ans =
+%	    45
+%
+%	NOTE: Some functions, such as sum, prod, etc. will error
+%	if you try to use them on non-numeric types.
+%-------------------------------------------------------------------------------
 %}
+%
 classdef chainer
 	properties(SetAccess = private, GetAccess = public)
 		value
