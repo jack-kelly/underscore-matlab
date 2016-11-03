@@ -4,10 +4,10 @@
 %
 % USAGE:
 % 
-% >> tail(1:10)
+% >> last(1:10)
 % ans =
 %	10
-% >> tail([])
+% >> last([])
 % ans = 
 % 	[]
 function out = last(collection)

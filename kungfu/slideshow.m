@@ -3,7 +3,7 @@ function [varargout] = slideshow(images, varargin)
 
 	h = figure;
 	ax      = axes('Units', 'normalized', 'Position',[0.05 0.15,0.90,0.80]);
-	im(iter(images,1))
+	imagesc(iter(images,1))
 	update_call(1);
 	
 	control = uicontrol('Style', 'Slider', ...
@@ -35,14 +35,14 @@ function slider_callback(ax, images, iter,update_call, source, data)
 	obj = guihandles(source.Parent);
 	obj.valueEdit.String = num2str(k);
 
-	axes(ax); im(iter(images,k)); update_call(); drawnow;
+	axes(ax); imagesc(iter(images,k)); update_call(); drawnow;
 end
 
 function text_callback(ax, images, iter,update_call, source, data)
 	obj = guihandles(source.Parent);
 	k = clamp(round(real(str2double(source.String))), [obj.valueSlider.Min obj.valueSlider.Max] );
 	obj.valueSlider.Value = k;
-	axes(ax); im(iter(images,k)); update_call(k); drawnow;
+	axes(ax); imagesc(iter(images,k)); update_call(k); drawnow;
 end
 
 function scrollwheel_callback(ax,images,iter,update_call, source, data)
@@ -77,8 +77,13 @@ function [images, n, iter, update_call] = validate(images,varargin)
 		n = numel(images);
 		iter = @(I, k) I{clamp(k,[1 n])};
 	elseif isnumeric(images)
-		n = full_size(images,3);
-		iter = @(I, k) I(:,:,clamp(k, [1 n]));
+		if numdims(images) == 4
+			n = full_size(images,4);
+			iter = @(I, k) squeeze(I(:,:,:,clamp(k, [1 n])));
+		else
+			n = full_size(images,3);
+			iter = @(I, k) I(:,:,clamp(k, [1 n]));
+		end
 	else
 		error('Unsupported format for images.');	
 	end
