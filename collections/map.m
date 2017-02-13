@@ -1,4 +1,4 @@
-% out = map(fun, collection)
+% out = map(fun, collection, [dim])
 %
 % Apply fun to each element of collection and
 % store result in same kind of collection.
@@ -18,14 +18,35 @@
 % >> map(@sum, {1:5,1:10,1:15})
 % ans = 
 %     [15]    [55]    [120]
-function out = map(fun, collection)
-	if iscell(collection)
-		for k = 1:numel(collection)
-			collection{k} = fun(collection{k});
+% 
+% OPTIONAL: pass dim to map over a specific dimension
+% 
+function out = map(fun, collection, dim)
+	% regular mode
+	if nargin < 3 || isempty(dim)
+		if iscell(collection)
+			for k = 1:numel(collection)
+				collection{k} = fun(collection{k});
+			end
+		else
+			for k = 1:numel(collection)
+				collection(k) = fun(collection(k));
+			end
 		end
+	% map over specific dim
 	else
-		for k = 1:numel(collection)
-			collection(k) = fun(collection(k));
+		N = max(numdims(collection), dim);
+		K = size(collection,dim);
+		if iscell(collection)
+			for k = 1:K
+				inds = dim_slice(N,dim,k);
+				collection(inds{:}) = fun(collection(inds{:}));
+			end
+		else
+			for k = 1:K
+				inds = dim_slice(N,dim,k);
+				collection(inds{:}) = fun(collection(inds{:}));
+			end
 		end
 	end
 	out = collection;

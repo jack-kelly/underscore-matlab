@@ -9,19 +9,15 @@
 %	For example, consider the functions f, g and, h.
 %	If we call Y = chain(f,g,h), then
 %
-%	>> Y();
+%	>> Y(a, b, c, ... );
 %
 %	is equivalent to
 %
-%	>> f();
-%	>> g();
-%	>> h();
+%	>> f(a, b, c, ... );
+%	>> g(a, b, c, ... );
+%	>> h(a, b, c, ... );
 %
 %	NOTE: Does NOT return any values.
-%
-%	Will error if collection cannot contain
-%	return type of fun (usually from non-numeric 
-%	functions mapped to numeric arrays).
 %
 %	USAGE:
 %
@@ -32,8 +28,16 @@
 %	     1
 %	     2
 %	     3
+%   >> F = chain(@(a,b,c)disp(a+b), @(a,b,c)disp(b+c), @(a,b,c)disp(c+a))
+%   F = 
+%       @(varargin)each(@(f)f(varargin{:}),funcs)
+%   >> F(1,2,3)
+%        3
+%        5
+%        4
 %-------------------------------------------------------------------------------
 %}
 function out = chain(varargin)
-	out = @() each(@(f)f(), varargin);
+    funcs = varargin; clear varargin;
+	out = @(varargin) each(@(f)f(varargin{:}), funcs);
 end
