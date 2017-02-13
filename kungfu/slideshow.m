@@ -20,6 +20,12 @@
 %	colormap    - a string indicating which colormap to display images
 %				  e.g. 'gray', 'hot', etc.
 %
+% USAGE:
+%
+%	>> slideshow(randn(100,100,50))
+%   >> slideshow(cat(4, imread('test1.png'), imread('test2.png')))
+%   >> slideshow({randn(100,100,1), randn(100,200,1), imread('test1.png')})
+%   >> slideshow(randn(100,100,50), @(k)title(sprintf('Frame %d',k)), 'gray')
 %-------------------------------------------------------------------------------
 %}
 function [varargout] = slideshow(images, varargin)
