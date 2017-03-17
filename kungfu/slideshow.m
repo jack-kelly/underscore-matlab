@@ -113,7 +113,7 @@ function [images, n, iter, update_call, cmap] = validate(images,varargin)
 	if iscell(images)
 		n = numel(images);
 		iter = @(I, k) I{clamp(k,[1 n])};
-	elseif isnumeric(images)
+	elseif isnumeric(images) || islogical(images)
 		if numdims(images) == 4
 			n = full_size(images,4);
 			iter = @(I, k) squeeze(I(:,:,:,clamp(k, [1 n])));

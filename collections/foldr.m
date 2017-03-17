@@ -1,3 +1,4 @@
+% out = foldr(fun, collection, x0)
 function out = foldr(fun, collection, x0)
 	if nargin <3 || isempty(x0)
 		out = foldr(fun,tail(collection),head(collection));
