@@ -5,14 +5,6 @@
 function h = manipulate(f, lims, varargin)
 	[f, vars, lims, steps] = validate(f, lims, varargin{:});
 
-	% Find all non-manipulate figures before we call the function for the first time
-	root_children_init = get(groot,'Children');
-
-	if ~isempty(root_children_init)
-		valid_figure_inds = cell2mat(map(@(s)not(strcmp(s,'Manipulate Slider')), {root_children_init.Name}));
-		root_children_init = root_children_init(valid_figure_inds);
-	end
-
 	h                  = figure;
 	% h.NextPlot         = 'new';
 	% h.ToolBar          = 'none';
