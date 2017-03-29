@@ -1,3 +1,7 @@
+% Examples, for now:
+% manipulate(@(x) x^2, {{'x',0,2,0.1}})
+% 
+% Plot functions that do not return a valid graphics object will probably not work.
 function h = manipulate(f, lims, varargin)
 	[f, vars, lims, steps] = validate(f, lims, varargin{:});
 
@@ -10,11 +14,14 @@ function h = manipulate(f, lims, varargin)
 	end
 
 	h                  = figure;
-	h.NextPlot         = 'new';
-	h.ToolBar          = 'none';
+	% h.NextPlot         = 'new';
+	% h.ToolBar          = 'none';
 	h.Name             = 'Manipulate Slider'
 	h.NumberTitle      = 'off';
 	% h.HandleVisibility = 'off';
+
+	var_panel = uipanel(h, 'Title', 'Variables','FontSize',12,'BackgroundColor','white','Position',[0.01 0.01 .39 .98]);
+	out_panel = uipanel(h, 'Title', 'Output',   'FontSize',12,'BackgroundColor','white','Position',[0.39 0.01 .59 .98]);
 
 	N = numel(vars);
     
@@ -24,67 +31,72 @@ function h = manipulate(f, lims, varargin)
 
 		[lo, hi] = deal(lims{k}{:});
 
-		uicontrol('Style','text', ...
+		uicontrol(var_panel,'Style','text', ...
 				  'Units', 'normalized', ...
 				  'Position', [0.001, 1 - k/N,0.19,1/N], ...
 				  'String', vars{k});
 
-		slider = uicontrol('Style', 'Slider', ...
+		slider = uicontrol(var_panel,'Style', 'Slider', ...
 							'Min', lo, 'Max', hi, 'Value', lo, ...
 							'SliderStep', [steps{k} steps{k}], ...
 						 	'Units', 'normalized', ...
 						 	'Position',[0.2, 1 - k/N,0.60,1/N], ...
 						 	'Callback', curry_n(@slider_callback,f,vars{k}));
 		
-		text   = uicontrol('Style', 'edit', ...
+		text   = uicontrol(var_panel,'Style', 'edit', ...
 						   'String', num2str(lo), ...
 						   'Units', 'normalized', ...
 				 	       'Position',[0.80, 1 - k/N,0.18,1/N], ...
 				 	       'Callback', curry_n(@text_callback,f,vars{k}));
 
-		h.WindowScrollWheelFcn = curry(@scrollwheel_callback, f);
 
 		var_map(vars{k}) = struct('slider', slider, 'text', text, 'min',lo, 'max', hi, 'value', lo, 'step', steps{k} );
 	end
 	
-	% Set up the data that will be held in the manipulate slider.
-	h.UserData.var_map = var_map;
-	h.UserData.vars    = vars;
-	h.UserData.fig     = [];
+	h.WindowScrollWheelFcn = curry(@scrollwheel_callback, f);
 	
+	% Set up the data that will be held in the manipulate slider.
+	h.UserData.var_map   = var_map;
+	h.UserData.vars      = vars;
+	h.UserData.axes      = [];
+	h.UserData.var_panel = var_panel;
+	h.UserData.out_panel = out_panel;
+	
+	initialize_output(f,h.UserData)
+
 	eval_manipulated(f,h.UserData)
-
-	% Find out what figures the manipulate function created.
-	root_children_post = get(groot,'Children');
-	if ~isempty(root_children_post)
-		valid_figure_inds = cell2mat(map(@(s)not(strcmp(s,'Manipulate Slider')), {root_children_post.Name}));
-		root_children_post = root_children_post(valid_figure_inds);
-	end
-
-	% Find any new figures since we evaluated the manipulated function
-	manipulate_figs = setdiff(root_children_post, root_children_init);
-
-	% Not sure how to handle the dynamic "switching between figures" yet
-	assert(numel(manipulate_figs) < 2,'Manipulate:numFigs','Functions creating more than 1 figure are not currently supported.')
-
-	h.UserData.fig     = head(manipulate_figs);
 	
 	% Make initial size a little nicer.
 	h.Position(end) = 20*N;
 end
 
+function initialize_output(f,user_data)
+	args = map(@(v) user_data.var_map(v).value, user_data.var_map.keys );
+
+	ax = axes(user_data.out_panel);
+
+	out = f(args{:});
+
+	if isa(out,'handle')
+		user_data.axes = ax;
+	else
+		delete(ax);
+	end
+
+end
+
 function eval_manipulated(f,user_data)
 	args = map(@(v) user_data.var_map(v).value, user_data.var_map.keys );
 	
-	if ~isempty(user_data.fig) 
-		figure(user_data.fig); 
+	if ~isempty(user_data.axes) 
+		axes(user_data.axes); 
 	end
 	
-	f(args{:})
+	f(args{:});
 end
 
 function slider_callback(f,variable, source, data)
-	h = source.Parent;
+	h = source.Parent.Parent; % figure handle. immediate parent is panel
 	
 	v = source.Value;
 	v = clamp(v, [h.UserData.var_map(variable).min h.UserData.var_map(variable).max]);
@@ -100,7 +112,7 @@ function slider_callback(f,variable, source, data)
 end
 
 function text_callback(f,variable, source, data)
-	h = source.Parent;
+	h = source.Parent.Parent; % figure handle. immediate parent is panel
 	v = real(str2double(source.String));
 
 	v = clamp(v, [h.UserData.var_map(variable).min h.UserData.var_map(variable).max]);
@@ -118,7 +130,8 @@ end
 
 function scrollwheel_callback(f, source, data)
 	N = numel(source.UserData.vars);
-	k = clamp(ceil(N * (1 - source.CurrentPoint(2)/source.Position(4))), [1 N]);
+
+	k = clamp(ceil(N * (1 - source.CurrentPoint(2)/source.UserData.var_panel.Position(4))), [1 N]);
 
 	variable = source.UserData.vars{k};
 	slider   = source.UserData.var_map(variable).slider;
