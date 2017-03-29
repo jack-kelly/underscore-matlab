@@ -62,37 +62,44 @@ function h = manipulate(f, lims, varargin)
 	h.UserData.var_panel = var_panel;
 	h.UserData.out_panel = out_panel;
 	
-	initialize_output(f,h.UserData)
+	initialize_output(f,h)
 
-	eval_manipulated(f,h.UserData)
+	eval_manipulated(f,h)
 	
 	% Make initial size a little nicer.
 	h.Position(end) = 20*N;
 end
 
-function initialize_output(f,user_data)
-	args = map(@(v) user_data.var_map(v).value, user_data.var_map.keys );
+function initialize_output(f,h)
+	args = map(@(v) h.UserData.var_map(v).value, h.UserData.var_map.keys );
 
-	ax = axes(user_data.out_panel);
+	ax = axes(h.UserData.out_panel);
 
 	out = f(args{:});
 
 	if isa(out,'handle')
-		user_data.axes = ax;
+		h.UserData.axes = ax;
 	else
 		delete(ax);
+		s = evalc('f(args{:})');
+		t = uicontrol(h.UserData.out_panel,'Style','text','String',join(s,'\n'));
+		t.Units = 'normalized';
+		t.Position = [0.01 0.01 .98 .98];
+		t.HorizontalAlignment = 'left';
 	end
 
 end
 
-function eval_manipulated(f,user_data)
-	args = map(@(v) user_data.var_map(v).value, user_data.var_map.keys );
-	
-	if ~isempty(user_data.axes) 
-		axes(user_data.axes); 
+function eval_manipulated(f,h)
+	args = map(@(v) h.UserData.var_map(v).value, h.UserData.var_map.keys );
+
+	if ~isempty(h.UserData.axes) 
+		axes(h.UserData.axes);
+		f(args{:});
+	else
+		s = evalc('f(args{:})');
+		h.UserData.out_panel.Children.String = join(s,'\n');
 	end
-	
-	f(args{:});
 end
 
 function slider_callback(f,variable, source, data)
@@ -108,7 +115,7 @@ function slider_callback(f,variable, source, data)
 
 	h.UserData.var_map(variable) = var_data;
 
-	eval_manipulated(f,h.UserData);
+	eval_manipulated(f,h);
 end
 
 function text_callback(f,variable, source, data)
@@ -125,7 +132,7 @@ function text_callback(f,variable, source, data)
     
     h.UserData.var_map(variable) = var_data;
     
-	eval_manipulated(f,h.UserData);
+	eval_manipulated(f,h);
 end
 
 function scrollwheel_callback(f, source, data)
