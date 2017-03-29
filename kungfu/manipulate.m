@@ -8,7 +8,7 @@ function h = manipulate(f, lims, varargin)
 	h                  = figure;
 	% h.NextPlot         = 'new';
 	% h.ToolBar          = 'none';
-	h.Name             = 'Manipulate Slider'
+	h.Name             = 'Manipulate Slider';
 	h.NumberTitle      = 'off';
 	% h.HandleVisibility = 'off';
 
