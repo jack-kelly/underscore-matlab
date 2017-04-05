@@ -6,11 +6,8 @@ function h = manipulate(f, lims, varargin)
 	[f, vars, lims, steps] = validate(f, lims, varargin{:});
 
 	h                  = figure;
-	% h.NextPlot         = 'new';
-	% h.ToolBar          = 'none';
 	h.Name             = 'Manipulate Slider';
 	h.NumberTitle      = 'off';
-	% h.HandleVisibility = 'off';
 
 	var_panel = uipanel(h, 'Title', 'Variables','FontSize',12,'BackgroundColor','white','Position',[0.01 0.01 .39 .98]);
 	out_panel = uipanel(h, 'Title', 'Output',   'FontSize',12,'BackgroundColor','white','Position',[0.39 0.01 .59 .98]);
@@ -74,7 +71,13 @@ function initialize_output(f,h)
 	else
 		delete(ax);
 		s = evalc('f(args{:})');
-		t = uicontrol(h.UserData.out_panel,'Style','text','String',join(s,'\n'));
+		
+		% 2017a changes the behavior of evalc
+		if size(s,1) > 1
+			s = join(s,'\n');
+		end
+		
+		t = uicontrol(h.UserData.out_panel,'Style','text','String',s);
 		t.Units = 'normalized';
 		t.Position = [0.01 0.01 .98 .98];
 		t.HorizontalAlignment = 'left';
@@ -90,7 +93,11 @@ function eval_manipulated(f,h)
 		f(args{:});
 	else
 		s = evalc('f(args{:})');
-		h.UserData.out_panel.Children.String = join(s,'\n');
+		% 2017a changes the behavior of evalc
+		if size(s,1) > 1
+			s = join(s,'\n');
+		end
+		h.UserData.out_panel.Children.String = s;
 	end
 end
 
