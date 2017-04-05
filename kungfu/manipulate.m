@@ -172,7 +172,7 @@ function [f,vars, limits, steps] = validate(f,lims,varargin)
 	% If the function doesn't take varargin, make sure the variables
 	% match what the user put in, otherwise, sort the input ranges to
 	% match up with the argument order for the function
-	if not(isequal(functionVars,{'varargin'}))
+	if not(isequal(functionVars,{'varargin'}) || functionVars == 0 )
 		if ~isequal(sort(vars), sort(get_input_vars(f))) 
 			error('Variable name mismatch. Make sure your variables used in the limits are the same as in the function.');
 		end
