@@ -5,12 +5,23 @@
 function h = manipulate(f, lims, varargin)
 	[f, vars, lims, steps] = validate(f, lims, varargin{:});
 
+	screenSize = drop(2,get(groot, 'ScreenSize'));
+
+	slider_w = 48;
+	vars_w   = numel(vars)*slider_w;
+
 	h                  = figure;
 	h.Name             = 'Manipulate Slider';
 	h.NumberTitle      = 'off';
+	h.Units			   = 'pixels';
+	h.Position 		   = [screenSize/3 screenSize/2];
 
-	var_panel = uipanel(h, 'Title', 'Variables','FontSize',12,'BackgroundColor','white','Position',[0.01 0.01 .39 .98]);
-	out_panel = uipanel(h, 'Title', 'Output',   'FontSize',12,'BackgroundColor','white','Position',[0.39 0.01 .59 .98]);
+	% positions are [left bottom width height]
+	var_panel = uipanel( h, 'Title', 'Inputs','FontSize',8,'BackgroundColor','white', ...
+						'Units', 'pixels','Position',[0, 0, vars_w, screenSize(2)/2]);
+
+	out_panel = uipanel( h, 'Title', 'Output','FontSize',8,'BackgroundColor','white', ... 
+					 	'Units', 'pixels','Position',[vars_w+1, 0,  screenSize(1)/2-vars_w, screenSize(2)/2]);
 
 	N = numel(vars);
     
@@ -20,29 +31,31 @@ function h = manipulate(f, lims, varargin)
 
 		[lo, hi] = deal(lims{k}{:});
 
-		uicontrol(var_panel,'Style','text', ...
-				  'Units', 'normalized', ...
-				  'Position', [0.001, 1 - k/N,0.19,1/N], ...
+		label  = uicontrol(var_panel,'Style','text', ...
+				  'Units', 'pixels', ...
+				  'Position', [(k-1)*slider_w, screenSize(2)/2 - 40, slider_w,20], ...
 				  'String', vars{k});
 
 		slider = uicontrol(var_panel,'Style', 'Slider', ...
 							'Min', lo, 'Max', hi, 'Value', lo, ...
 							'SliderStep', [steps{k} steps{k}], ...
-						 	'Units', 'normalized', ...
-						 	'Position',[0.2, 1 - k/N,0.60,1/N], ...
+						 	'Units', 'pixels', ...
+						 	'Position',[(k-1)*slider_w, 20, slider_w, screenSize(2)/2 - 60], ...
 						 	'Callback', curry_n(@slider_callback,f,vars{k}));
 		
 		text   = uicontrol(var_panel,'Style', 'edit', ...
 						   'String', num2str(lo), ...
-						   'Units', 'normalized', ...
-				 	       'Position',[0.80, 1 - k/N,0.18,1/N], ...
+						   'Units', 'pixels', ...
+				 	       'Position',[(k-1)*slider_w, 0, slider_w, 20], ...
 				 	       'Callback', curry_n(@text_callback,f,vars{k}));
 
 
-		var_map(vars{k}) = struct('slider', slider, 'text', text, 'min',lo, 'max', hi, 'value', lo, 'step', steps{k} );
+		var_map(vars{k}) = struct('slider', slider, 'text', text, 'label', label, ...
+								  'min',lo, 'max', hi, 'value', lo, 'step', steps{k} );
 	end
 	
 	h.WindowScrollWheelFcn = curry(@scrollwheel_callback, f);
+	h.SizeChangedFcn       = @resize_callback;
 	
 	% Set up the data that will be held in the manipulate slider.
 	h.UserData.var_map   = var_map;
@@ -50,13 +63,11 @@ function h = manipulate(f, lims, varargin)
 	h.UserData.axes      = [];
 	h.UserData.var_panel = var_panel;
 	h.UserData.out_panel = out_panel;
+	h.UserData.slider_w  = slider_w;
 	
 	initialize_output(f,h)
 
 	eval_manipulated(f,h)
-	
-	% Make initial size a little nicer.
-	h.Position(end) = 20*N;
 end
 
 function initialize_output(f,h)
@@ -137,7 +148,12 @@ end
 function scrollwheel_callback(f, source, data)
 	N = numel(source.UserData.vars);
 
-	k = clamp(ceil(N * (1 - source.CurrentPoint(2)/source.UserData.var_panel.Position(4))), [1 N]);
+	k = ceil(source.CurrentPoint(1)/source.UserData.slider_w);
+
+	% only scroll when we're on the actual scrollbars
+	if k < 1 || k > N
+		return
+	end
 
 	variable = source.UserData.vars{k};
 	slider   = source.UserData.var_map(variable).slider;
@@ -150,6 +166,30 @@ function scrollwheel_callback(f, source, data)
 	if v ~= slider.Value
 		slider.Value = v;
 		slider.Callback(slider);
+	end
+end
+
+function resize_callback(hObj,event)
+	slider_w = hObj.UserData.slider_w;
+	vars_w   = numel(hObj.UserData.vars)*slider_w;
+
+	hObj.Position(3:4) = max( hObj.Position(3:4), [2*vars_w 100] );
+	figSize = hObj.Position(3:4);
+
+	hObj.UserData.var_panel.Position = [0, 0, vars_w, figSize(2)];
+	hObj.UserData.out_panel.Position = [vars_w+1, 0,  figSize(1)-vars_w, figSize(2)];
+
+	for k = 1:numel(hObj.UserData.vars)
+		variable = hObj.UserData.vars{k};
+
+		label = hObj.UserData.var_map(variable).label;
+		label.Position  = [(k-1)*slider_w, figSize(2) - 40, slider_w,20];
+		
+		slider = hObj.UserData.var_map(variable).slider;
+		slider.Position = [(k-1)*slider_w, 20, slider_w, figSize(2) - 60];
+		
+		text = hObj.UserData.var_map(variable).text;
+		text.Position   = [(k-1)*slider_w, 0, slider_w, 20];
 	end
 end
 
@@ -172,7 +212,7 @@ function [f,vars, limits, steps] = validate(f,lims,varargin)
 	% If the function doesn't take varargin, make sure the variables
 	% match what the user put in, otherwise, sort the input ranges to
 	% match up with the argument order for the function
-	if not(isequal(functionVars,{'varargin'}) || functionVars == 0 )
+	if not(isequal(functionVars,{'varargin'}) || isequal(functionVars, 0) )
 		if ~isequal(sort(vars), sort(get_input_vars(f))) 
 			error('Variable name mismatch. Make sure your variables used in the limits are the same as in the function.');
 		end
