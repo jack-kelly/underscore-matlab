@@ -1,8 +1,40 @@
-% Examples, for now:
-% manipulate(@(x) x^2, {{'x',0,2,0.1}})
+% h = manipulate(f, lims)
 % 
-% Plot functions that do not return a valid graphics object will probably not work.
-function h = manipulate(f, lims, varargin)
+% MANIPULATE
+% 
+% Generates a figure with sliders to interact with a passed in function
+% and watch how it changes.
+% 
+% For a good starting example, try out:
+% >> manipulate(@(x) x^2, {{'x',0,2,0.1}} )
+% and
+% >> manipulate(@(n)im(magic(n)), {{'n',5,15,1}})
+% 
+% INPUTS
+% 	f    - an anonymous function handle. if f returns a graphics handle,
+% 		   the graphics object will be displayed in the manipulate panel.
+% 		   Otherwise, the manipulate panel will display the text output as
+% 		   if f had been evaluated at the command prompt without a
+% 		   terminating semicolon (;).
+% 
+% 	lims - a cell array of cell arrays, one for each input to f,
+% 		   in the format
+% 				lims{k} = {varname, start, end[, step]} where
+% 					varname - string of variable name, e.g. 'x'
+% 					start   - start value for slider
+% 					end     - end value for slider
+% 					step    - (optional) step size for slider. if omitted,
+% 							  50 equal steps will be used
+% 
+% OUTPUTS
+% 	h - figure handle for the manipulate
+% 
+% NOTES
+% 	Plot functions that do not return a valid graphics object will probably not work.
+% 	Functions that call figure() inside will not work properly with the manipulate
+% 	figure -- every time you move the slider, a new figure will pop up. This can be
+%   remedied by changing figure() calls to gcf() calls
+function varargout = manipulate(f, lims, varargin)
 	[f, vars, lims, steps] = validate(f, lims, varargin{:});
 
 	screenSize = drop(2,get(groot, 'ScreenSize'));
@@ -68,6 +100,10 @@ function h = manipulate(f, lims, varargin)
 	initialize_output(f,h)
 
 	eval_manipulated(f,h)
+
+	if nargout > 0
+		varargout{1} = h;
+	end
 end
 
 function initialize_output(f,h)
