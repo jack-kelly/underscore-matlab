@@ -107,7 +107,7 @@ function varargout = manipulate(f, lims, varargin)
 end
 
 function initialize_output(f,h)
-	args = map(@(v) h.UserData.var_map(v).value, h.UserData.var_map.keys );
+	args = map(@(v) h.UserData.var_map(v).value, h.UserData.vars );
 
 	ax = axes(h.UserData.out_panel);
 
@@ -133,7 +133,7 @@ function initialize_output(f,h)
 end
 
 function eval_manipulated(f,h)
-	args = map(@(v) h.UserData.var_map(v).value, h.UserData.var_map.keys );
+	args = map(@(v) h.UserData.var_map(v).value, h.UserData.vars );
 
 	if ~isempty(h.UserData.axes) 
 		axes(h.UserData.axes);
@@ -261,5 +261,7 @@ function [f,vars, limits, steps] = validate(f,lims,varargin)
 
 		vars = vars(shuffle_inds);
 		lims = lims(shuffle_inds);
+        steps = steps(shuffle_inds);
+        limits = limits(shuffle_inds);
 	end
 end
