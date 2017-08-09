@@ -112,6 +112,10 @@ function initialize_output(f,h)
 	ax = axes(h.UserData.out_panel);
 
 	out = f(args{:});
+    
+    if ~isvalid(ax)
+        ax = h.UserData.out_panel;
+    end
 
 	if isa(out,'handle')
 		h.UserData.axes = ax;
