@@ -9,7 +9,7 @@
 %	images 		- A stack of images. 
 %				  Can be in several forms:
 %				  	1) an [M N   numImages] array of grayscale images
-%				  	2) an [M N L numImages] array of color images
+%				  	2) an [M N 3 numImages] array of color images
 %				  	3) a cell array with numImages elements, each a different
 %				  	   image of possibly different sizes
 % 
@@ -116,6 +116,9 @@ function [images, n, iter, update_call, cmap] = validate(images,varargin)
 	elseif isnumeric(images) || islogical(images)
 		if numdims(images) == 4
 			n = full_size(images,4);
+            if size(images,3) ~= 3
+                error('slideshow is only valid for 1 or 3 channel imagery');
+            end
 			iter = @(I, k) squeeze(I(:,:,:,clamp(k, [1 n])));
 		else
 			n = full_size(images,3);

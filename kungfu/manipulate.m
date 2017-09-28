@@ -35,7 +35,7 @@
 % 	figure -- every time you move the slider, a new figure will pop up. This can be
 %   remedied by changing figure() calls to gcf() calls
 function varargout = manipulate(f, lims, varargin)
-	[f, vars, lims, steps] = validate(f, lims, varargin{:});
+	[f, vars, lims, steps, post_f] = validate(f, lims, varargin{:});
 
 	screenSize = drop(2,get(groot, 'ScreenSize'));
 
@@ -73,13 +73,13 @@ function varargout = manipulate(f, lims, varargin)
 							'SliderStep', [steps{k} steps{k}], ...
 						 	'Units', 'pixels', ...
 						 	'Position',[(k-1)*slider_w, 20, slider_w, screenSize(2)/2 - 60], ...
-						 	'Callback', curry_n(@slider_callback,f,vars{k}));
+						 	'Callback', curry_n(@slider_callback,f,post_f,vars{k}));
 		
 		text   = uicontrol(var_panel,'Style', 'edit', ...
 						   'String', num2str(lo), ...
 						   'Units', 'pixels', ...
 				 	       'Position',[(k-1)*slider_w, 0, slider_w, 20], ...
-				 	       'Callback', curry_n(@text_callback,f,vars{k}));
+				 	       'Callback', curry_n(@text_callback,f,post_f,vars{k}));
 
 
 		var_map(vars{k}) = struct('slider', slider, 'text', text, 'label', label, ...
@@ -97,16 +97,16 @@ function varargout = manipulate(f, lims, varargin)
 	h.UserData.out_panel = out_panel;
 	h.UserData.slider_w  = slider_w;
 	
-	initialize_output(f,h)
+	initialize_output(f,post_f,h)
 
-	eval_manipulated(f,h)
+	eval_manipulated(f,post_f,h)
 
 	if nargout > 0
 		varargout{1} = h;
 	end
 end
 
-function initialize_output(f,h)
+function initialize_output(f,post_f,h)
 	args = map(@(v) h.UserData.var_map(v).value, h.UserData.vars );
 
 	ax = axes(h.UserData.out_panel);
@@ -134,9 +134,11 @@ function initialize_output(f,h)
 		t.HorizontalAlignment = 'left';
 	end
 
+	post_f(args{:});
+
 end
 
-function eval_manipulated(f,h)
+function eval_manipulated(f,post_f,h)
 	args = map(@(v) h.UserData.var_map(v).value, h.UserData.vars );
 
 	if ~isempty(h.UserData.axes) 
@@ -150,9 +152,11 @@ function eval_manipulated(f,h)
 		end
 		h.UserData.out_panel.Children.String = s;
 	end
+
+	post_f(args{:});
 end
 
-function slider_callback(f,variable, source, data)
+function slider_callback(f, post_f, variable, source, data)
 	h = source.Parent.Parent; % figure handle. immediate parent is panel
 	
 	v = source.Value;
@@ -165,10 +169,10 @@ function slider_callback(f,variable, source, data)
 
 	h.UserData.var_map(variable) = var_data;
 
-	eval_manipulated(f,h);
+	eval_manipulated(f,post_f,h);
 end
 
-function text_callback(f,variable, source, data)
+function text_callback(f,post_f, variable, source, data)
 	h = source.Parent.Parent; % figure handle. immediate parent is panel
 	v = real(str2double(source.String));
 
@@ -182,7 +186,7 @@ function text_callback(f,variable, source, data)
     
     h.UserData.var_map(variable) = var_data;
     
-	eval_manipulated(f,h);
+	eval_manipulated(f,post_f,h);
 end
 
 function scrollwheel_callback(f, source, data)
@@ -233,7 +237,7 @@ function resize_callback(hObj,event)
 	end
 end
 
-function [f,vars, limits, steps] = validate(f,lims,varargin)
+function [f,vars, limits, steps, post_f] = validate(f,lims,varargin)
 	vars = map(@head, lims);
 	limits = cell(1,numel(vars));
 	steps = cell(1,numel(vars));
@@ -245,6 +249,13 @@ function [f,vars, limits, steps] = validate(f,lims,varargin)
 		else
 			steps{k} = lims{k}{4} / (limits{k}{2} - limits{k}{1});
 		end
+	end
+
+	% Get the postprocess function
+	if ~isempty(varargin)
+		post_f = chain(varargin{:});
+	else
+		post_f = @pass;								
 	end
 
 	functionVars = get_input_vars(f);
