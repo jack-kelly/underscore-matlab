@@ -28,7 +28,7 @@
 %   >> slideshow(randn(100,100,50), @(k)title(sprintf('Frame %d',k)), 'gray')
 %-------------------------------------------------------------------------------
 %}
-function [varargout] = slideshow(images, varargin)
+function hout = slideshow(images, varargin)
 	[images, n, iter, update_call, cmap] = validate(images, varargin{:});
 
 	h = figure;
@@ -55,8 +55,8 @@ function [varargout] = slideshow(images, varargin)
 
 	h.WindowScrollWheelFcn = curry_n(@scrollwheel_callback, ax,images,iter, update_call, cmap);
 
-	if nargout > 0
-		varargout = h;
+	if nargout == 1
+		hout = h;
 	end
 end
 
