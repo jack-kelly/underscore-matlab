@@ -30,6 +30,11 @@
 % 	h - figure handle for the manipulate
 % 
 % NOTES
+%  	Input values are restricted to the valid values given in the limit descriptions,
+% 	e.g., with {'x',0,2,0.1} if you enter 1.618 into the text box, it will be rounded
+%   to the nearest valid value, 1.6. Similarly if you use the slider with the mouse,
+%   the nearest valid value will be used.
+% 
 % 	Plot functions that do not return a valid graphics object will probably not work.
 % 	Functions that call figure() inside will not work properly with the manipulate
 % 	figure -- every time you move the slider, a new figure will pop up. This can be
@@ -161,6 +166,13 @@ function slider_callback(f, post_f, variable, source, data)
 	
 	v = source.Value;
 	v = clamp(v, [h.UserData.var_map(variable).min h.UserData.var_map(variable).max]);
+
+    lo = h.UserData.var_map(variable).min;
+    hi = h.UserData.var_map(variable).max;
+    step = h.UserData.var_map(variable).step;
+
+    v = v - mod( v - lo,  (hi-lo)*step);
+
 	source.Value = v;
     
     var_data = h.UserData.var_map(variable);
@@ -177,6 +189,12 @@ function text_callback(f,post_f, variable, source, data)
 	v = real(str2double(source.String));
 
 	v = clamp(v, [h.UserData.var_map(variable).min h.UserData.var_map(variable).max]);
+
+    lo = h.UserData.var_map(variable).min;
+    hi = h.UserData.var_map(variable).max;
+    step = h.UserData.var_map(variable).step;
+
+    v = v - mod( v - lo,  (hi-lo)*step);
 
 	source.String = num2str(v);
 
